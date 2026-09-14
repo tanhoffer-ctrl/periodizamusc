@@ -6,14 +6,36 @@
   <title>PeriodizaFit — Periodização de Musculação</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div style="padding:40px;text-align:center;color:#9aa8bf;font-family:sans-serif">
+      Carregando PeriodizaFit…
+    </div>
+  </div>
+
+  <!-- React e ReactDOM via CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Fallback: se o React não carregar (sem internet ou CDN bloqueado) -->
+  <script>
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        if (!window.React || !window.ReactDOM) {
+          document.getElementById("root").innerHTML =
+            '<div style="padding:40px;text-align:center;color:#ff6b6b;font-family:sans-serif;line-height:1.6">' +
+            "<strong>Não foi possível carregar os componentes.</strong><br>" +
+            "Verifique sua conexão com a internet e recarregue a página." +
+            "</div>";
+        }
+      }, 4000);
+    });
+  </script>
+
+  <!-- App -->
   <script src="engine.js"></script>
-  <script type="text/babel" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
