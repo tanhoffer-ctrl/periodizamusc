@@ -429,6 +429,7 @@ function gerarPeriodizacao(config) {
 
           return {
             exercicio: ex.nome,
+            grupo: ex.grupo,
             series: meso.series,
             reps: meso.repsMin === meso.repsMax ? `${meso.repsMin}` : `${meso.repsMin}-${meso.repsMax}`,
             descanso: meso.descanso,
@@ -466,7 +467,16 @@ function gerarPeriodizacao(config) {
   };
 }
 
+/* Rótulos amigáveis dos grupos musculares (para a UI de troca) */
+const GRUPO_NOMES = {
+  peito: "Peito", costas: "Costas", ombros: "Ombros", trapezio: "Trapézio",
+  biceps: "Bíceps", triceps: "Tríceps", antebraco: "Antebraço",
+  quadriceps: "Quadríceps", posterior: "Posterior de coxa", gluteos: "Glúteos",
+  panturrilha: "Panturrilha", core: "Core",
+};
+
 /* Exporta para o escopo global (usado pelo app.js) */
 window.PeriodizaEngine = {
   OBJETIVOS, FOCOS, NIVEIS, gerarPeriodizacao,
+  EXERCICIOS, GRUPO_NOMES,
 };
