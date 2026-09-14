@@ -59,14 +59,27 @@ const EXERCICIOS = {
   core: ["Prancha", "Abdominal infra", "Rotação de tronco (cabo)", "Prancha lateral", "Elevação de pernas"],
 };
 
-/* Quais grupos musculares entram em cada foco */
-const GRUPOS_POR_FOCO = {
-  corpo_todo: ["peito", "costas", "ombros", "biceps", "triceps", "quadriceps", "posterior", "gluteos", "panturrilha", "core"],
-  superiores: ["peito", "costas", "ombros", "biceps", "triceps"],
-  inferiores: ["quadriceps", "posterior", "gluteos", "panturrilha"],
-  core: ["core"],
-  superiores_core: ["peito", "costas", "ombros", "biceps", "triceps", "core"],
-  inferiores_core: ["quadriceps", "posterior", "gluteos", "panturrilha", "core"],
+/* ---------- Segmentos corporais ----------
+   Cada segmento agrupa os grupos musculares que o compõem.
+   MMII é subdividido para os dias 4x/5x (quad+glúteo | posterior+pant). */
+const SEGMENTOS = {
+  MMSS: ["peito", "costas", "ombros", "biceps", "triceps"],
+  MMII: ["quadriceps", "posterior", "gluteos", "panturrilha"],
+  CORE: ["core"],
+};
+const MMII_SUB_A = ["quadriceps", "gluteos"];       // ênfase anterior
+const MMII_SUB_B = ["posterior", "panturrilha"];    // ênfase posterior
+const MMSS_SUB_A = ["peito", "ombros", "triceps"];  // empurrar
+const MMSS_SUB_B = ["costas", "biceps"];            // puxar
+
+/* ---------- Volume por nível ----------
+   nSegmento = nº de exercícios do segmento principal do dia
+   nCore     = nº de exercícios de core no dia
+   nCorpoTodo = nº total quando o foco é "corpo todo" */
+const VOLUME_POR_NIVEL = {
+  iniciante:     { nSegmento: 3, nCore: 1, nCorpoTodo: 4 },
+  intermediario: { nSegmento: 4, nCore: 1, nCorpoTodo: 5 },
+  avancado:      { nSegmento: 6, nCore: 2, nCorpoTodo: 7 },
 };
 
 /* ============================================================
@@ -195,59 +208,139 @@ const MESOS_POR_OBJETIVO = {
   ],
 };
 
-/* ---------- Divisão de treino por dias/semana ---------- */
+/* ============================================================
+   DIVISÃO DE TREINO (foco = prioridade, não exclusividade)
+   ------------------------------------------------------------
+   Retorna uma lista de dias. Cada dia descreve:
+     - nome: rótulo da sessão
+     - segmento: "MMSS" | "MMII" | "MISTO" (corpo todo)
+     - grupos: grupos musculares elegíveis para o segmento do dia
+     - core: true/false (se inclui core)
+   A quantidade de exercícios é resolvida depois, por nível.
+   ============================================================ */
 function montarDivisao(focoId, diasSemana) {
-  const grupos = GRUPOS_POR_FOCO[focoId];
-
-  // Foco em corpo todo ou muitos grupos → dividir em splits sensatos
+  // ----- Corpo todo: mescla todos os segmentos em cada treino -----
   if (focoId === "corpo_todo") {
-    if (diasSemana === 3) {
-      return [
-        { nome: "A — Empurrar (Peito/Ombro/Tríceps)", grupos: ["peito", "ombros", "triceps", "core"] },
-        { nome: "B — Puxar (Costas/Bíceps)", grupos: ["costas", "biceps", "core"] },
-        { nome: "C — Inferiores", grupos: ["quadriceps", "posterior", "gluteos", "panturrilha"] },
-      ];
+    const dias = [];
+    for (let d = 0; d < diasSemana; d++) {
+      dias.push({
+        nome: `Sessão ${letra(d)} — Corpo todo`,
+        segmento: "MISTO",
+        grupos: SEGMENTOS.MMSS.concat(SEGMENTOS.MMII),
+        core: true,
+      });
     }
-    if (diasSemana === 4) {
-      return [
-        { nome: "A — Peito e Tríceps", grupos: ["peito", "triceps"] },
-        { nome: "B — Costas e Bíceps", grupos: ["costas", "biceps"] },
-        { nome: "C — Inferiores", grupos: ["quadriceps", "posterior", "gluteos", "panturrilha"] },
-        { nome: "D — Ombros e Core", grupos: ["ombros", "core"] },
-      ];
-    }
-    // 5x
+    return dias;
+  }
+
+  // ----- Focos por segmento (MMII prioritário ou MMSS prioritário) -----
+  const focoMMII = (focoId === "inferiores" || focoId === "inferiores_core");
+  const segFoco = focoMMII ? "MMII" : "MMSS";
+  const segSec = focoMMII ? "MMSS" : "MMII";
+
+  // grupos do dia de FOCO (com subdivisão nos padrões A/B para MMII/MMSS)
+  const subFocoA = focoMMII ? MMII_SUB_A : MMSS_SUB_A;
+  const subFocoB = focoMMII ? MMII_SUB_B : MMSS_SUB_B;
+  const gruposSec = SEGMENTOS[segSec];
+
+  const diaFoco = (letraIdx, sub, sufixo) => ({
+    nome: `Sessão ${letra(letraIdx)} — ${rotuloSeg(segFoco)}${sufixo ? " (" + sufixo + ")" : ""}`,
+    segmento: segFoco,
+    grupos: sub,
+    core: false, // dia de foco não força core (segue regra por nível)
+  });
+  const diaSec = (letraIdx) => ({
+    nome: `Sessão ${letra(letraIdx)} — ${rotuloSeg(segSec)} + Core`,
+    segmento: segSec,
+    grupos: gruposSec,
+    core: true,
+  });
+
+  if (diasSemana === 3) {
+    // A: foco (completo) · B: secundário+core · C: foco (completo)
+    const completo = SEGMENTOS[segFoco];
     return [
-      { nome: "A — Peito", grupos: ["peito", "triceps"] },
-      { nome: "B — Costas", grupos: ["costas", "biceps"] },
-      { nome: "C — Pernas (Quadríceps)", grupos: ["quadriceps", "panturrilha"] },
-      { nome: "D — Ombros e Core", grupos: ["ombros", "core"] },
-      { nome: "E — Posterior e Glúteos", grupos: ["posterior", "gluteos"] },
+      { nome: `Sessão A — ${rotuloSeg(segFoco)}`, segmento: segFoco, grupos: completo, core: false },
+      diaSec(1),
+      { nome: `Sessão C — ${rotuloSeg(segFoco)}`, segmento: segFoco, grupos: completo, core: false },
     ];
   }
 
-  // Focos específicos: distribui os grupos disponíveis pelos dias
-  const dias = [];
-  for (let d = 0; d < diasSemana; d++) {
-    // rotaciona os grupos entre os dias para variar estímulo
-    const gruposDia = grupos.filter((_, i) => i % diasSemana === d % Math.max(grupos.length, 1));
-    const sel = gruposDia.length ? gruposDia : grupos;
-    dias.push({ nome: `Sessão ${String.fromCharCode(65 + d)}`, grupos: sel });
+  if (diasSemana === 4) {
+    // A: foco(subA) · B: sec+core · C: foco(subB) · D: sec+core
+    return [
+      diaFoco(0, subFocoA, subNome(segFoco, "A")),
+      diaSec(1),
+      diaFoco(2, subFocoB, subNome(segFoco, "B")),
+      diaSec(3),
+    ];
   }
-  return dias;
+
+  // 5x → A: foco(subA) · B: sec+core · C: foco(subB) · D: sec+core · E: foco(subA)
+  return [
+    diaFoco(0, subFocoA, subNome(segFoco, "A")),
+    diaSec(1),
+    diaFoco(2, subFocoB, subNome(segFoco, "B")),
+    diaSec(3),
+    diaFoco(4, subFocoA, subNome(segFoco, "A")),
+  ];
 }
 
-/* ---------- Seleção de exercícios para uma sessão ---------- */
-function exerciciosDaSessao(grupos, nivel, meso) {
-  const porGrupo = nivel === "iniciante" ? 1 : nivel === "intermediario" ? 2 : 2;
+/* Helpers de rótulo */
+function letra(i) { return String.fromCharCode(65 + i); }
+function rotuloSeg(seg) { return seg === "MMII" ? "MMII" : seg === "MMSS" ? "MMSS" : "Corpo todo"; }
+function subNome(seg, ab) {
+  if (seg === "MMII") return ab === "A" ? "Quadríceps e Glúteos" : "Posterior e Panturrilha";
+  return ab === "A" ? "Empurrar" : "Puxar";
+}
+
+/* ============================================================
+   SELEÇÃO DE EXERCÍCIOS PARA UMA SESSÃO
+   ------------------------------------------------------------
+   Usa a regra de volume por nível:
+     - dia de foco/secundário: nSegmento exercícios do segmento
+       do dia + nCore de core (se o dia inclui core).
+     - corpo todo: nCorpoTodo exercícios distribuídos entre
+       todos os grupos + nCore de core.
+   O parâmetro rotacao varia os exercícios escolhidos entre os
+   dias/semanas para evitar repetição idêntica.
+   ============================================================ */
+function exerciciosDaSessao(dia, nivel, rotacao) {
+  const vol = VOLUME_POR_NIVEL[nivel] || VOLUME_POR_NIVEL.intermediario;
   const lista = [];
-  grupos.forEach((g) => {
-    const pool = EXERCICIOS[g] || [];
-    for (let i = 0; i < Math.min(porGrupo, pool.length); i++) {
-      lista.push({ nome: pool[i], grupo: g });
+
+  if (dia.segmento === "MISTO") {
+    // corpo todo: distribui nCorpoTodo exercícios entre os grupos, 1 por grupo, rotacionando
+    const grupos = dia.grupos;
+    for (let i = 0; i < vol.nCorpoTodo; i++) {
+      const g = grupos[(i + rotacao) % grupos.length];
+      lista.push(pickExercicio(g, Math.floor((i + rotacao) / grupos.length) + rotacao));
     }
-  });
+    // core
+    for (let c = 0; c < vol.nCore; c++) lista.push(pickExercicio("core", c + rotacao));
+    return lista;
+  }
+
+  // dia de segmento: distribui nSegmento exercícios entre os grupos do segmento do dia
+  const grupos = dia.grupos;
+  for (let i = 0; i < vol.nSegmento; i++) {
+    const g = grupos[i % grupos.length];
+    // quantas vezes esse grupo já apareceu, para pegar exercício diferente
+    const ocorrencia = Math.floor(i / grupos.length);
+    lista.push(pickExercicio(g, ocorrencia + rotacao));
+  }
+  // core (se o dia inclui) — dia de foco não tem; dia secundário tem
+  if (dia.core) {
+    for (let c = 0; c < vol.nCore; c++) lista.push(pickExercicio("core", c + rotacao));
+  }
   return lista;
+}
+
+/* Escolhe um exercício de um grupo, rotacionando pela biblioteca */
+function pickExercicio(grupo, offset) {
+  const pool = EXERCICIOS[grupo] || [];
+  if (pool.length === 0) return { nome: grupo, grupo };
+  return { nome: pool[((offset % pool.length) + pool.length) % pool.length], grupo };
 }
 
 /* ---------- Ajuste de progressão dentro do mesociclo ---------- */
@@ -274,8 +367,10 @@ function gerarPeriodizacao(config) {
     const semanas = [];
     for (let s = 1; s <= meso.semanas; s++) {
       semanaGlobal++;
-      const dias = divisao.map((dia) => {
-        const exs = exerciciosDaSessao(dia.grupos, nivel, meso);
+      const dias = divisao.map((dia, diaIdx) => {
+        // rotação varia por dia e por semana → exercícios diferentes entre sessões
+        const rotacao = diaIdx + (s - 1);
+        const exs = exerciciosDaSessao(dia, nivel, rotacao);
         const linhas = exs.map((ex, idx) => {
           // aplica técnicas avançadas em parte dos exercícios (nas fases que pedem)
           let tecnica = "";
