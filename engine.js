@@ -40,37 +40,82 @@ const NIVEIS = [
 const EXERCICIOS = {
   peito: [
     "Supino reto com barra", "Supino inclinado com halteres",
-    "Crucifixo na máquina", "Flexão de braço", "Crossover"
+    "Crucifixo na máquina", "Flexão de braço", "Crossover",
+    "Crucifixo inclinado", "Peck Deck", "Supino reto com halteres",
+    "Crucifixo no Cross no banco", "Crucifixo no Cross em pé"
   ],
   costas: [
-    "Puxada frontal", "Remada curvada", "Remada baixa",
-    "Barra fixa", "Pullover"
+    "Puxada frontal", "Remada curvada", "Remada baixa", "Barra fixa",
+    "Pulôver", "Face pull", "Remada cavalinho", "Pulldown",
+    "Remada serrote", "Remada aberta apoio", "Puxada alta supinada", "Puxada alta"
   ],
   ombros: [
-    "Desenvolvimento com halteres", "Elevação lateral",
-    "Elevação frontal", "Remada alta", "Crucifixo inverso"
+    "Desenvolvimento com halteres", "Elevação lateral", "Elevação frontal",
+    "Remada alta", "Crucifixo inverso", "Crucifixo inverso no banco inclinado",
+    "Crucifixo inverso no Cross em pé", "Crucifixo inverso no Cross no banco reto",
+    "Crucifixo inverso com halteres", "Desenvolvimento máquina",
+    "Desenvolvimento barra atrás da nuca", "Desenvolvimento no Smith"
   ],
-  biceps: ["Rosca direta", "Rosca alternada", "Rosca scott", "Rosca martelo"],
-  triceps: ["Tríceps na polia", "Tríceps testa", "Tríceps francês", "Mergulho no banco"],
-  quadriceps: ["Agachamento livre", "Leg press", "Cadeira extensora", "Afundo"],
-  posterior: ["Stiff", "Mesa flexora", "Cadeira flexora", "Elevação pélvica"],
-  gluteos: ["Elevação pélvica", "Coice na polia", "Abdução na máquina", "Agachamento sumô"],
-  panturrilha: ["Panturrilha em pé", "Panturrilha sentado"],
-  core: ["Prancha", "Abdominal infra", "Rotação de tronco (cabo)", "Prancha lateral", "Elevação de pernas"],
+  trapezio: [
+    "Encolhimento halteres", "Encolhimento com anilha", "Encolhimento máquina",
+    "Encolhimento barra", "Encolhimento no Smith"
+  ],
+  biceps: [
+    "Rosca direta", "Rosca alternada", "Rosca scott", "Rosca martelo",
+    "Rosca martelo (polia)", "Rosca martelo alternada", "Rosca martelo Scott",
+    "Rosca 45", "Rosca direta polia", "Rosca spider", "Rosca inversa com barra",
+    "Rosca inversa com halteres", "Rosca inversa com barra W"
+  ],
+  triceps: [
+    "Tríceps na polia", "Tríceps testa", "Tríceps francês", "Mergulho no banco",
+    "Tríceps com barra W", "Apoio na parede (pegada fechada)",
+    "Flexão de cotovelo fechado ajoelhado", "Kick back (polia)",
+    "Kick back sentado com halteres"
+  ],
+  antebraco: [
+    "Carretel", "Desvio radial", "Flexão de punho com barra",
+    "Flexão de punho com halteres", "Hiperextensão de punho com barra",
+    "Hiperextensão de punho com halteres"
+  ],
+  quadriceps: [
+    "Agachamento livre", "Leg press", "Cadeira extensora", "Afundo",
+    "Agachamento Smith", "Afundo no Smith", "Agachamento frontal",
+    "Agachamento Hack", "Leg press 45 (pés altos)", "Leg press 45 (pés unidos)",
+    "Leg press horizontal"
+  ],
+  posterior: [
+    "Stiff", "Mesa flexora", "Cadeira flexora", "Elevação pélvica",
+    "RDL", "Good morning", "Flexora unilateral (máquina)", "Mesa flexora unilateral"
+  ],
+  gluteos: [
+    "Elevação pélvica", "Coice na polia", "Abdução na máquina", "Agachamento sumô",
+    "Hip thrust (com barra)", "Cadeira abdutora", "Extensão de quadril na polia",
+    "Agachamento búlgaro", "Glúteos 4 apoios", "Abdução na polia"
+  ],
+  panturrilha: [
+    "Panturrilha em pé", "Panturrilha sentado", "Panturrilha no Leg press (bilateral)",
+    "Panturrilha em pé unilateral", "Panturrilha em pé no Smith",
+    "Panturrilha em pé com halteres", "Panturrilha negativa", "Panturrilha em pé na máquina"
+  ],
+  core: [
+    "Prancha", "Abdominal infra", "Rotação de tronco (cabo)", "Prancha lateral",
+    "Elevação de perna", "Prancha alta", "Prancha baixa", "Prancha lateral alta",
+    "Prancha lateral baixa", "Abdominal banco", "Abdominal bicicleta", "Abdominal oblíquo"
+  ],
 };
 
 /* ---------- Segmentos corporais ----------
    Cada segmento agrupa os grupos musculares que o compõem.
    MMII é subdividido para os dias 4x/5x (quad+glúteo | posterior+pant). */
 const SEGMENTOS = {
-  MMSS: ["peito", "costas", "ombros", "biceps", "triceps"],
+  MMSS: ["peito", "costas", "ombros", "trapezio", "biceps", "triceps", "antebraco"],
   MMII: ["quadriceps", "posterior", "gluteos", "panturrilha"],
   CORE: ["core"],
 };
-const MMII_SUB_A = ["quadriceps", "gluteos"];       // ênfase anterior
-const MMII_SUB_B = ["posterior", "panturrilha"];    // ênfase posterior
-const MMSS_SUB_A = ["peito", "ombros", "triceps"];  // empurrar
-const MMSS_SUB_B = ["costas", "biceps"];            // puxar
+const MMII_SUB_A = ["quadriceps", "gluteos"];                     // ênfase anterior
+const MMII_SUB_B = ["posterior", "panturrilha"];                  // ênfase posterior
+const MMSS_SUB_A = ["peito", "ombros", "triceps"];                // empurrar
+const MMSS_SUB_B = ["costas", "trapezio", "biceps", "antebraco"]; // puxar
 
 /* ---------- Volume por nível ----------
    nSegmento = nº de exercícios do segmento principal do dia
