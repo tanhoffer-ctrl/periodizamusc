@@ -27,16 +27,42 @@
      Persistência no navegador (localStorage)
      ============================================================ */
   var STORAGE_KEY = "periodizafit_alunos";
+  var ultimoErroSalvar = "";            // guarda o motivo da última falha
+  var localStorageOk = testarLocalStorage();
+
+  function testarLocalStorage() {
+    try {
+      var k = "__pf_test__";
+      window.localStorage.setItem(k, "1");
+      window.localStorage.removeItem(k);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
 
   function carregarAlunos() {
+    if (!localStorageOk) return [];
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = window.localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch (err) { return []; }
   }
+
   function salvarAlunos(lista) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(lista)); return true; }
-    catch (err) { return false; }
+    ultimoErroSalvar = "";
+    if (!localStorageOk) {
+      // fallback: mantém em memória durante a sessão
+      ultimoErroSalvar = "armazenamento_indisponivel";
+      return false;
+    }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+      return true;
+    } catch (err) {
+      ultimoErroSalvar = (err && err.name) ? err.name : "erro_desconhecido";
+      return false;
+    }
   }
   function gerarId() {
     return "a_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
@@ -188,9 +214,10 @@
     }
 
     function salvar() {
-      var ok = props.onSalvar(prog);
-      salvoMsg[1](ok ? "✔ Aluno salvo neste navegador" : "✖ Não foi possível salvar");
-      setTimeout(function () { salvoMsg[1](""); }, 3000);
+      var res = props.onSalvar(prog);
+      // res agora é { ok, mensagem }
+      salvoMsg[1](res.mensagem);
+      setTimeout(function () { salvoMsg[1](""); }, 6000);
     }
 
     var badges = [
@@ -224,7 +251,13 @@
         e("button", { className: "btn secondary", onClick: salvar }, "💾 Salvar aluno"),
         e("button", { className: "btn secondary", onClick: function () { window.print(); } }, "📄 Exportar PDF")
       ),
-      salvoMsg[0] ? e("p", { className: "footer-note no-print", style: { color: "var(--accent-2)", marginTop: 8 } }, salvoMsg[0]) : null,
+      salvoMsg[0] ? e("p", {
+        className: "footer-note no-print",
+        style: {
+          color: salvoMsg[0].charAt(0) === "✔" ? "var(--accent-2)" : "var(--warn)",
+          marginTop: 8, textAlign: "left", lineHeight: 1.5,
+        },
+      }, salvoMsg[0]) : null,
 
       editando[0]
         ? e("div", { className: "meso-desc no-print", style: { borderLeftColor: "var(--warn)" } },
@@ -349,9 +382,22 @@
         lista.push(novo);
         editId[1](novo.id);
       }
+      // sempre atualiza em memória → o app funciona durante a sessão
+      alunos[1](lista);
+
       var ok = salvarAlunos(lista);
-      if (ok) alunos[1](lista);
-      return ok;
+      var mensagem;
+      if (ok) {
+        mensagem = "✔ Aluno salvo neste navegador";
+      } else if (ultimoErroSalvar === "armazenamento_indisponivel") {
+        mensagem = "⚠ Salvo apenas nesta sessão — seu navegador está bloqueando o armazenamento local " +
+                   "(comum em aba anônima/privada). Abra o site numa aba normal para salvar de forma permanente.";
+      } else if (ultimoErroSalvar === "QuotaExceededError") {
+        mensagem = "⚠ Espaço de armazenamento do navegador cheio. Exclua algum aluno antigo e tente novamente.";
+      } else {
+        mensagem = "⚠ Salvo apenas nesta sessão (não foi possível gravar no navegador: " + ultimoErroSalvar + ").";
+      }
+      return { ok: ok, mensagem: mensagem };
     }
 
     function excluirAluno(id) {
