@@ -204,6 +204,30 @@ function mesoSimples(id, nome, semanas, series, repsMin, repsMax, descanso, inte
   return { id, nome, semanas, series, repsMin, repsMax, descanso, intensidade, descricao, tecnicas: tecnicas || [], exaustao: !!exaustao };
 }
 
+/* Construtor de mesociclo ONDULATÓRIO SEMANAL.
+   semanasParams = array; cada item define os parâmetros daquela semana:
+     { series, repsMin, repsMax, descanso, pct }
+   O nº de semanas do mesociclo é o tamanho desse array.
+   Guarda também valores "representativos" (1ª semana) nos campos
+   padrão, para a UI que exibe resumo do mesociclo. */
+function mesoOndulatorio(id, nome, descricao, semanasParams, tecnicas, exaustao) {
+  const p0 = semanasParams[0];
+  // faixa geral de %1RM do bloco (menor mín ao maior máx) para o resumo
+  const pcts = semanasParams.map((w) => w.pct);
+  return {
+    id, nome,
+    semanas: semanasParams.length,
+    series: p0.series,
+    repsMin: p0.repsMin, repsMax: p0.repsMax,
+    descanso: p0.descanso,
+    intensidade: pcts[0] + (pcts.length > 1 ? " (ondula por semana)" : ""),
+    descricao,
+    tecnicas: tecnicas || [],
+    exaustao: !!exaustao,
+    ondulacaoSemanal: semanasParams, // <- consumido pela geração
+  };
+}
+
 const MESOS_POR_OBJETIVO = {
   hipertrofia: MESO_HIPERTROFIA,
   hipertrofia_estetica: [
@@ -213,12 +237,53 @@ const MESOS_POR_OBJETIVO = {
     mesoSimples("consolidacao", "Consolidação", 2, 5, 10, 12, "45-60s", "Alta · volume total elevado", "Pico de volume para maximizar pump e definição.", ["bi-set"], true),
     mesoSimples("recuperacao", "Recuperação (Deload)", 1, 3, 12, 12, "60s", "Reduzida", "Recuperação ativa.", [], false),
   ],
+  // ==========================================================
+  // FORÇA — modelo ONDULATÓRIO SEMANAL (13 semanas)
+  // Intensidade em %1RM. Sem falha (recuperação neural completa).
+  // Dentro de cada mesociclo, as semanas ondulam entre carga
+  // mais alta (menos reps) e mais moderada (mais reps/volume),
+  // dentro das faixas do bloco. Baseado em síntese da literatura
+  // (ACSM position stand; JSCR periodização; método de esforço
+  // máximo de Zatsiorsky).
+  // ==========================================================
   forca: [
-    mesoSimples("base", "Base / Hipertrofia funcional", 3, 4, 6, 8, "2-3 min", "Alta (~75-80% 1RM)", "Construção de base muscular para suportar cargas altas.", [], false),
-    mesoSimples("forca1", "Força I", 3, 5, 4, 5, "3 min", "Muito alta (~82-87% 1RM)", "Ênfase em movimentos multiarticulares pesados com progressão de carga.", [], false),
-    mesoSimples("forca2", "Força II", 3, 5, 2, 3, "3-4 min", "Máxima (~88-93% 1RM)", "Cargas máximas em baixas repetições. Recuperação completa entre séries.", [], false),
-    mesoSimples("pico", "Pico / Realização", 2, 3, 1, 3, "4-5 min", "Máxima (~90-95%+ 1RM)", "Expressão máxima de força. Baixíssimo volume, alta especificidade.", [], false),
-    mesoSimples("recuperacao", "Recuperação (Deload)", 1, 3, 5, 6, "2 min", "Reduzida", "Recuperação ativa antes de retestar cargas.", [], false),
+    mesoOndulatorio("base", "Base (Hipertrofia funcional)",
+      "Construção de base muscular e tendínea para suportar cargas altas. Ondulação semanal de volume/intensidade.",
+      [
+        { series: 4, repsMin: 8, repsMax: 10, descanso: "90-120s", pct: "65-70% 1RM" },
+        { series: 4, repsMin: 6, repsMax: 8,  descanso: "2 min",    pct: "70-75% 1RM" },
+        { series: 3, repsMin: 8, repsMax: 10, descanso: "90-120s", pct: "68-72% 1RM" },
+      ], [], false),
+
+    mesoOndulatorio("forca1", "Força I (Acumulação)",
+      "Acúmulo de volume em intensidade elevada. Ênfase em movimentos multiarticulares. Ondulação semanal.",
+      [
+        { series: 4, repsMin: 5, repsMax: 6, descanso: "2-3 min", pct: "75-78% 1RM" },
+        { series: 4, repsMin: 4, repsMax: 5, descanso: "3 min",   pct: "78-82% 1RM" },
+        { series: 4, repsMin: 5, repsMax: 6, descanso: "2-3 min", pct: "77-80% 1RM" },
+      ], [], false),
+
+    mesoOndulatorio("forca2", "Força II (Intensificação)",
+      "Intensificação com cargas altas em baixas repetições. Recuperação completa entre séries. Ondulação semanal.",
+      [
+        { series: 5, repsMin: 3, repsMax: 4, descanso: "3 min", pct: "83-85% 1RM" },
+        { series: 4, repsMin: 3, repsMax: 4, descanso: "3 min", pct: "85-88% 1RM" },
+        { series: 5, repsMin: 3, repsMax: 4, descanso: "3 min", pct: "84-86% 1RM" },
+      ], [], false),
+
+    mesoOndulatorio("pico", "Pico de Força (Realização)",
+      "Expressão máxima de força. Baixíssimo volume, alta especificidade. Método de esforço máximo.",
+      [
+        { series: 4, repsMin: 2, repsMax: 3, descanso: "3-5 min", pct: "88-90% 1RM" },
+        { series: 5, repsMin: 1, repsMax: 3, descanso: "3-5 min", pct: "90-93%+ 1RM" },
+        { series: 3, repsMin: 1, repsMax: 2, descanso: "4-5 min", pct: "92-95%+ 1RM" },
+      ], [], false),
+
+    mesoOndulatorio("recuperacao", "Deload (Recuperação)",
+      "Semana de recuperação ativa. Redução de volume e intensidade para dissipar fadiga e permitir supercompensação.",
+      [
+        { series: 2, repsMin: 5, repsMax: 5, descanso: "2 min", pct: "~60% 1RM" },
+      ], [], false),
   ],
   resistencia: [
     mesoSimples("adaptacao", "Adaptação", 2, 2, 15, 20, "30-45s", "Baixa-moderada", "Adaptação com altas repetições e descansos curtos.", [], false),
@@ -388,6 +453,13 @@ function pickExercicio(grupo, offset) {
   return { nome: pool[((offset % pool.length) + pool.length) % pool.length], grupo };
 }
 
+/* Rótulo do modelo de periodização por objetivo */
+function modeloDoObjetivo(objetivo) {
+  if (objetivo === "forca") return "Ondulatório semanal";
+  if (objetivo === "hipertrofia" || objetivo === "hipertrofia_estetica") return "Ondulatório";
+  return "Linear/Ondulatório";
+}
+
 /* ---------- Ajuste de progressão dentro do mesociclo ---------- */
 function notaProgressao(meso, semanaNoMeso) {
   if (meso.id === "recuperacao" || meso.id === "retorno") return "Manter cargas leves";
@@ -412,6 +484,16 @@ function gerarPeriodizacao(config) {
     const semanas = [];
     for (let s = 1; s <= meso.semanas; s++) {
       semanaGlobal++;
+
+      // parâmetros efetivos da semana: se o mesociclo ondula por semana,
+      // usa os valores da semana atual; senão, usa os do mesociclo.
+      const w = (meso.ondulacaoSemanal && meso.ondulacaoSemanal[s - 1]) || null;
+      const wSeries = w ? w.series : meso.series;
+      const wRepsMin = w ? w.repsMin : meso.repsMin;
+      const wRepsMax = w ? w.repsMax : meso.repsMax;
+      const wDescanso = w ? w.descanso : meso.descanso;
+      const wPct = w ? w.pct : null;
+
       const dias = divisao.map((dia, diaIdx) => {
         // rotação varia por dia e por semana → exercícios diferentes entre sessões
         const rotacao = diaIdx + (s - 1);
@@ -430,9 +512,10 @@ function gerarPeriodizacao(config) {
           return {
             exercicio: ex.nome,
             grupo: ex.grupo,
-            series: meso.series,
-            reps: meso.repsMin === meso.repsMax ? `${meso.repsMin}` : `${meso.repsMin}-${meso.repsMax}`,
-            descanso: meso.descanso,
+            series: wSeries,
+            reps: wRepsMin === wRepsMax ? `${wRepsMin}` : `${wRepsMin}-${wRepsMax}`,
+            descanso: wDescanso,
+            pct: wPct,
             exaustao: meso.exaustao,
             tecnica,
           };
@@ -442,7 +525,8 @@ function gerarPeriodizacao(config) {
       semanas.push({
         numeroGlobal: semanaGlobal,
         numeroNoMeso: s,
-        progressao: notaProgressao(meso, s),
+        // em mesociclos ondulatórios, a tag mostra o %1RM da semana
+        progressao: wPct ? ("Intensidade: " + wPct) : notaProgressao(meso, s),
         dias,
       });
     }
@@ -461,7 +545,7 @@ function gerarPeriodizacao(config) {
     nivelNome: (NIVEIS.find((n) => n.id === nivel) || {}).nome,
     diasSemana,
     totalSemanas,
-    modelo: objetivo === "hipertrofia" || objetivo === "hipertrofia_estetica" ? "Ondulatório" : "Linear/Ondulatório",
+    modelo: modeloDoObjetivo(objetivo),
     mesociclos,
     geradoEm: new Date().toISOString(),
   };

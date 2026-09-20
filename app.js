@@ -134,12 +134,14 @@
             } else {
               celulaExercicio = e("span", { className: "ex-name" }, l.exercicio);
             }
+            var obs = l.tecnica || "";
+            if (l.pct) obs = obs ? (l.pct + " · " + obs) : l.pct;
             return e("tr", { key: i },
               e("td", null, celulaExercicio),
               e("td", null, l.series),
               e("td", null, l.reps + (l.exaustao ? " *" : "")),
               e("td", null, l.descanso),
-              e("td", { className: "tech" }, l.tecnica)
+              e("td", { className: "tech" }, obs)
             );
           }))
         )
