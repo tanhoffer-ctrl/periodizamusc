@@ -260,3 +260,35 @@ tr:last-child td { border-bottom: none; }
   /* separa mesociclos em páginas para leitura */
   .only-print, .week { page-break-inside: avoid; }
 }
+
+
+/* ---------- Caixa de IMC ---------- */
+.imc-box {
+  margin-top: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-2);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.imc-label { font-size: 13px; color: var(--text-dim); font-weight: 600; }
+.imc-valor { font-size: 22px; font-weight: 800; color: var(--accent-2); }
+.imc-classe { font-size: 14px; color: var(--text-dim); font-weight: 600; }
+.imc-obs { font-size: 12px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
+
+/* ---------- Tag "uso futuro" ---------- */
+.tag-futuro {
+  font-size: 11px; font-weight: 600;
+  color: var(--warn);
+  background: rgba(255, 180, 84, 0.12);
+  border: 1px solid rgba(255, 180, 84, 0.3);
+  padding: 3px 9px; border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* Ficha: dados do aluno também no PDF */
+@media print {
+  .imc-box { background: #f5f7fa !important; border: 1px solid #d0d7e2 !important; }
+  .imc-valor { color: #158a5e !important; }
+}
