@@ -339,6 +339,7 @@
           selectField("Foco", foco, FOCOS.map(function (f) { return { value: f.id, label: f.nome }; })),
           selectField("Nível", nivel, NIVEIS.map(function (n) { return { value: n.id, label: n.nome }; })),
           selectField("Dias por semana", diasSemana, [
+            { value: 2, label: "2x por semana" },
             { value: 3, label: "3x por semana" },
             { value: 4, label: "4x por semana" },
             { value: 5, label: "5x por semana" },

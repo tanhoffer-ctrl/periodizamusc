@@ -21,12 +21,25 @@ const OBJETIVOS = [
 
 const FOCOS = [
   { id: "corpo_todo", nome: "Corpo todo" },
-  { id: "superiores", nome: "Membros superiores" },
-  { id: "inferiores", nome: "Membros inferiores" },
+  { id: "superiores", nome: "Membros superiores (prioridade)" },
+  { id: "inferiores", nome: "Membros inferiores (prioridade)" },
   { id: "core", nome: "Core" },
-  { id: "superiores_core", nome: "Superiores + Core" },
-  { id: "inferiores_core", nome: "Inferiores + Core" },
+  { id: "superiores_core", nome: "Superiores + Core (prioridade)" },
+  { id: "inferiores_core", nome: "Inferiores + Core (prioridade)" },
+  // Focos EXCLUSIVOS (contexto PcD / rugby em cadeira de rodas)
+  { id: "mmss_exclusivo", nome: "MMSS (Exclusivo)" },
+  { id: "mmss_core_exclusivo", nome: "MMSS + Core (Exclusivo)" },
+  { id: "mmii_exclusivo", nome: "MMII (Exclusivo)" },
+  { id: "mmii_core_exclusivo", nome: "MMII + Core (Exclusivo)" },
 ];
+
+/* Conjunto dos focos exclusivos e helpers */
+const FOCOS_EXCLUSIVOS = ["mmss_exclusivo", "mmss_core_exclusivo", "mmii_exclusivo", "mmii_core_exclusivo"];
+function isExclusivo(focoId) { return FOCOS_EXCLUSIVOS.indexOf(focoId) !== -1; }
+function exclusivoTemCore(focoId) { return focoId === "mmss_core_exclusivo" || focoId === "mmii_core_exclusivo"; }
+function exclusivoSegmento(focoId) {
+  return (focoId === "mmss_exclusivo" || focoId === "mmss_core_exclusivo") ? "MMSS" : "MMII";
+}
 
 const NIVEIS = [
   { id: "iniciante", nome: "Iniciante" },
@@ -126,6 +139,24 @@ const VOLUME_POR_NIVEL = {
   intermediario: { nSegmento: 4, nCore: 1, nCorpoTodo: 5 },
   avancado:      { nSegmento: 6, nCore: 2, nCorpoTodo: 7 },
 };
+
+/* ---------- Volume REDUZIDO para focos exclusivos (PcD) ----------
+   Nº de exercícios do SEGMENTO por sessão, conforme frequência e nível.
+   Justificativa: tetraplégicos que treinam só MMSS já sobrecarregam
+   os membros superiores nas atividades de vida diária, exigindo
+   volume de treino menor que o convencional.
+   O core (quando o foco inclui "+ Core") é adicionado por cima,
+   usando nCore da tabela padrão (1 inic./interm., 2 avançado). */
+function volumeExclusivoSegmento(nivel, diasSemana) {
+  const avancado = (nivel === "avancado");
+  if (diasSemana <= 2) return avancado ? 6 : 4;
+  if (diasSemana === 3) return avancado ? 5 : 4;
+  // 4x ou 5x
+  return avancado ? 4 : 3;
+}
+function nCorePadrao(nivel) {
+  return (VOLUME_POR_NIVEL[nivel] || VOLUME_POR_NIVEL.intermediario).nCore;
+}
 
 /* ============================================================
    MESOCICLOS DE HIPERTROFIA (modelo detalhado do Ricardo)
@@ -329,6 +360,11 @@ const MESOS_POR_OBJETIVO = {
    A quantidade de exercícios é resolvida depois, por nível.
    ============================================================ */
 function montarDivisao(focoId, diasSemana) {
+  // ----- Focos EXCLUSIVOS (PcD) -----
+  if (isExclusivo(focoId)) {
+    return montarDivisaoExclusiva(focoId, diasSemana);
+  }
+
   // ----- Corpo todo: mescla todos os segmentos em cada treino -----
   if (focoId === "corpo_todo") {
     const dias = [];
@@ -405,6 +441,49 @@ function subNome(seg, ab) {
 }
 
 /* ============================================================
+   DIVISÃO EXCLUSIVA (PcD) — só MMSS ou só MMII, sem o outro
+   segmento. Distribuição Empurrar/Puxar/Full.
+   Para MMII: Empurrar = Quadríceps+Glúteos, Puxar = Posterior+
+   Panturrilha, Full = todos os grupos de MMII.
+   O core só aparece quando o foco é "+ Core (Exclusivo)".
+   Dias marcados com exclusivo:true → volume reduzido.
+   ============================================================ */
+function montarDivisaoExclusiva(focoId, diasSemana) {
+  const seg = exclusivoSegmento(focoId);            // "MMSS" ou "MMII"
+  const comCore = exclusivoTemCore(focoId);
+  const rotSeg = seg === "MMSS" ? "MMSS" : "MMII";
+
+  // grupos de cada padrão
+  const empurrar = seg === "MMSS" ? MMSS_SUB_A : MMII_SUB_A;
+  const puxar    = seg === "MMSS" ? MMSS_SUB_B : MMII_SUB_B;
+  const full     = SEGMENTOS[seg];
+
+  const rotPad = (padrao) => seg === "MMSS"
+    ? (padrao === "empurrar" ? "Empurrar" : padrao === "puxar" ? "Puxar" : "Full")
+    : (padrao === "empurrar" ? "Quadríceps e Glúteos" : padrao === "puxar" ? "Posterior e Panturrilha" : "Full");
+
+  const mkDia = (idx, padrao) => {
+    const grupos = padrao === "empurrar" ? empurrar : padrao === "puxar" ? puxar : full;
+    return {
+      nome: `Sessão ${letra(idx)} — ${rotSeg} (${rotPad(padrao)})` + (comCore ? " + Core" : ""),
+      segmento: seg,
+      grupos: grupos,
+      core: comCore,
+      exclusivo: true, // sinaliza volume reduzido
+    };
+  };
+
+  // padrões por frequência (2x incluído)
+  let padroes;
+  if (diasSemana <= 2)      padroes = ["empurrar", "puxar"];
+  else if (diasSemana === 3) padroes = ["empurrar", "puxar", "full"];
+  else if (diasSemana === 4) padroes = ["empurrar", "puxar", "empurrar", "puxar"];
+  else                       padroes = ["empurrar", "puxar", "empurrar", "puxar", "full"];
+
+  return padroes.map((p, i) => mkDia(i, p));
+}
+
+/* ============================================================
    SELEÇÃO DE EXERCÍCIOS PARA UMA SESSÃO
    ------------------------------------------------------------
    Usa a regra de volume por nível:
@@ -415,7 +494,7 @@ function subNome(seg, ab) {
    O parâmetro rotacao varia os exercícios escolhidos entre os
    dias/semanas para evitar repetição idêntica.
    ============================================================ */
-function exerciciosDaSessao(dia, nivel, rotacao) {
+function exerciciosDaSessao(dia, nivel, rotacao, diasSemana) {
   const vol = VOLUME_POR_NIVEL[nivel] || VOLUME_POR_NIVEL.intermediario;
   const lista = [];
 
@@ -431,17 +510,23 @@ function exerciciosDaSessao(dia, nivel, rotacao) {
     return lista;
   }
 
-  // dia de segmento: distribui nSegmento exercícios entre os grupos do segmento do dia
+  // nº de exercícios do segmento: reduzido se o dia for exclusivo (PcD)
+  const nSeg = dia.exclusivo
+    ? volumeExclusivoSegmento(nivel, diasSemana)
+    : vol.nSegmento;
+
+  // distribui nSeg exercícios entre os grupos do segmento do dia
   const grupos = dia.grupos;
-  for (let i = 0; i < vol.nSegmento; i++) {
+  for (let i = 0; i < nSeg; i++) {
     const g = grupos[i % grupos.length];
     // quantas vezes esse grupo já apareceu, para pegar exercício diferente
     const ocorrencia = Math.floor(i / grupos.length);
     lista.push(pickExercicio(g, ocorrencia + rotacao));
   }
-  // core (se o dia inclui) — dia de foco não tem; dia secundário tem
+  // core (se o dia inclui) — usa nCore padrão por nível
   if (dia.core) {
-    for (let c = 0; c < vol.nCore; c++) lista.push(pickExercicio("core", c + rotacao));
+    const nCore = nCorePadrao(nivel);
+    for (let c = 0; c < nCore; c++) lista.push(pickExercicio("core", c + rotacao));
   }
   return lista;
 }
@@ -497,7 +582,7 @@ function gerarPeriodizacao(config) {
       const dias = divisao.map((dia, diaIdx) => {
         // rotação varia por dia e por semana → exercícios diferentes entre sessões
         const rotacao = diaIdx + (s - 1);
-        const exs = exerciciosDaSessao(dia, nivel, rotacao);
+        const exs = exerciciosDaSessao(dia, nivel, rotacao, diasSemana);
         const linhas = exs.map((ex, idx) => {
           // aplica técnicas avançadas em parte dos exercícios (nas fases que pedem)
           let tecnica = "";
