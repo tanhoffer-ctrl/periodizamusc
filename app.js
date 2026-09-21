@@ -688,7 +688,7 @@
       ),
       conteudo,
       e("p", { className: "footer-note" },
-        "Protótipo v0.3 — lógica baseada em princípios consolidados de treinamento.",
+        "Protótipo v0.4 — lógica baseada em princípios consolidados de treinamento.",
         e("br"),
         "Prescrição sob responsabilidade técnica de Ricardo Tanhoffer, PhD em Ciências do Exercício."
       )
