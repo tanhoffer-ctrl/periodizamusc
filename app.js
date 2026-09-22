@@ -687,8 +687,15 @@
         )
       ),
       conteudo,
+      e("div", { className: "ciencia-box" },
+        e("p", { className: "ciencia-titulo" }, "🔬 Metodologia baseada em evidências científicas"),
+        e("p", { className: "ciencia-texto" },
+          "Toda a metodologia de periodização desta plataforma é fundamentada em evidências " +
+          "científicas atualizadas, seguindo as diretrizes do American College of Sports Medicine " +
+          "(ACSM) e da International Universities Strength and Conditioning Association (IUSCA).")
+      ),
       e("p", { className: "footer-note" },
-        "Protótipo v0.4 — lógica baseada em princípios consolidados de treinamento.",
+        "Protótipo v0.5 — lógica baseada em evidências científicas atualizadas.",
         e("br"),
         "Prescrição sob responsabilidade técnica de Ricardo Tanhoffer, PhD em Ciências do Exercício."
       )

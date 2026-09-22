@@ -261,12 +261,17 @@ function mesoOndulatorio(id, nome, descricao, semanasParams, tecnicas, exaustao)
 
 const MESOS_POR_OBJETIVO = {
   hipertrofia: MESO_HIPERTROFIA,
+  // ==========================================================
+  // HIPERTROFIA ESTÉTICA / BODYBUILDING — Ondulatório, 12 semanas
+  // Ênfase em volume alto, isolamento e simetria. ACSM 2026:
+  // maior volume semanal (~10+ séries/grupo) para crescimento.
+  // ==========================================================
   hipertrofia_estetica: [
-    mesoSimples("adaptacao", "Adaptação e Técnica", 2, 3, 10, 12, "45-75s", "Moderada · ênfase em conexão mente-músculo", "Adaptação com foco em qualidade de contração e simetria.", [], false),
-    mesoSimples("intensificacao1", "Intensificação I", 3, 4, 10, 12, "45-75s", "Alta · volume elevado", "Volume elevado com isolamento de grupos-alvo estéticos. Séries finais à exaustão.", [], true),
-    mesoSimples("definicao", "Definição / Densidade", 4, 4, 12, 15, "30-45s", "Moderada-alta · densidade", "Maior densidade (menos descanso) e reps mais altas para detalhamento muscular. Uso de drop-set.", ["drop-set", "bi-set"], true),
-    mesoSimples("consolidacao", "Consolidação", 2, 5, 10, 12, "45-60s", "Alta · volume total elevado", "Pico de volume para maximizar pump e definição.", ["bi-set"], true),
-    mesoSimples("recuperacao", "Recuperação (Deload)", 1, 3, 12, 12, "60s", "Reduzida", "Recuperação ativa.", [], false),
+    mesoSimples("adaptacao", "Adaptação e Técnica", 2, 3, 10, 12, "45-75s", "Moderada · ênfase em conexão mente-músculo", "Adaptação com foco em qualidade de contração, amplitude e simetria muscular.", [], false),
+    mesoSimples("volume1", "Volume I", 3, 4, 10, 12, "45-75s", "Alta · volume elevado", "Volume elevado com isolamento de grupos-alvo estéticos. Séries finais à exaustão. Alto volume semanal por grupo (ACSM 2026).", [], true),
+    mesoSimples("definicao", "Definição / Densidade", 4, 4, 12, 15, "30-45s", "Moderada-alta · densidade", "Maior densidade (menos descanso) e repetições mais altas para detalhamento muscular. Uso de drop-set e bi-set.", ["drop-set", "bi-set"], true),
+    mesoSimples("consolidacao", "Consolidação (pico de volume)", 2, 5, 10, 12, "45-60s", "Alta · volume total elevado", "Pico de volume para maximizar hipertrofia, pump e definição.", ["bi-set"], true),
+    mesoSimples("recuperacao", "Deload (Recuperação)", 1, 3, 12, 12, "60s", "Reduzida", "Recuperação ativa para dissipar fadiga acumulada.", [], false),
   ],
   // ==========================================================
   // FORÇA — modelo ONDULATÓRIO SEMANAL (13 semanas)
@@ -329,17 +334,29 @@ const MESOS_POR_OBJETIVO = {
     mesoSimples("pico", "Pico", 2, 3, 2, 3, "3-4 min", "Explosiva máxima", "Especificidade máxima de potência.", ["explosivo"], false),
     mesoSimples("recuperacao", "Recuperação (Deload)", 1, 3, 5, 5, "2 min", "Reduzida", "Recuperação ativa.", [], false),
   ],
+  // ==========================================================
+  // EMAGRECIMENTO — Circuito/metabólico, 11 semanas
+  // Densidade alta, grandes grupos, integração metabólica.
+  // ACSM Consensus (peso/adiposidade): treino resistido para
+  // preservar massa magra + progressão da atividade física.
+  // ==========================================================
   emagrecimento: [
-    mesoSimples("adaptacao", "Adaptação", 2, 3, 12, 15, "45s", "Moderada · gasto calórico", "Adaptação em formato de circuito para elevar gasto energético.", ["circuito"], false),
-    mesoSimples("metabolico1", "Condicionamento Metabólico I", 4, 3, 12, 15, "30-45s", "Moderada-alta · alta densidade", "Circuitos com grandes grupos musculares. Descansos curtos para manter FC elevada.", ["circuito", "bi-set"], false),
-    mesoSimples("metabolico2", "Condicionamento Metabólico II", 4, 4, 10, 15, "30s", "Alta densidade · HIIT integrado", "Maior densidade e intensidade, integrando intervalos metabólicos.", ["circuito", "hiit"], true),
-    mesoSimples("recuperacao", "Recuperação (Deload)", 1, 2, 12, 12, "60s", "Reduzida", "Recuperação ativa.", [], false),
+    mesoSimples("adaptacao", "Adaptação", 2, 3, 12, 15, "45s", "Moderada · gasto calórico", "Adaptação em formato de circuito para elevar o gasto energético e preservar massa magra.", ["circuito"], false),
+    mesoSimples("metabolico1", "Condicionamento Metabólico I", 4, 3, 12, 15, "30-45s", "Moderada-alta · alta densidade", "Circuitos com grandes grupos musculares. Descansos curtos para manter a frequência cardíaca elevada.", ["circuito", "bi-set"], false),
+    mesoSimples("metabolico2", "Condicionamento Metabólico II", 4, 4, 10, 15, "30s", "Alta densidade · HIIT integrado", "Maior densidade e intensidade, integrando intervalos metabólicos de alta intensidade (HIIT).", ["circuito", "hiit"], true),
+    mesoSimples("recuperacao", "Deload (Recuperação)", 1, 2, 12, 12, "60s", "Reduzida", "Recuperação ativa.", [], false),
   ],
+  // ==========================================================
+  // APTIDÃO GERAL (musculação para saúde) — Linear moderado, 12 semanas
+  // Equilíbrio de força, resistência e função; abordagem
+  // conservadora e sustentável. ACSM: treino resistido dos
+  // principais grupos 2-3x/semana, 8-12 reps (+ 15-25 p/ resistência).
+  // ==========================================================
   aptidao_geral: [
-    mesoSimples("adaptacao", "Adaptação Geral", 3, 3, 10, 12, "60s", "Moderada", "Desenvolvimento equilibrado de força, resistência e mobilidade.", [], false),
-    mesoSimples("desenvolvimento", "Desenvolvimento", 4, 3, 10, 15, "45-60s", "Moderada", "Progressão equilibrada de todas as capacidades físicas.", [], false),
-    mesoSimples("integracao", "Integração", 4, 3, 12, 15, "45s", "Moderada", "Combinação de força e resistência em formato variado.", ["circuito"], false),
-    mesoSimples("recuperacao", "Recuperação (Deload)", 1, 2, 12, 12, "60s", "Reduzida", "Recuperação ativa.", [], false),
+    mesoSimples("adaptacao", "Adaptação Geral", 3, 3, 10, 12, "60s", "Moderada", "Desenvolvimento equilibrado de força, resistência e mobilidade dos principais grupos musculares.", [], false),
+    mesoSimples("desenvolvimento", "Desenvolvimento", 4, 3, 10, 15, "45-60s", "Moderada", "Progressão equilibrada e sustentável de todas as capacidades físicas.", [], false),
+    mesoSimples("integracao", "Integração", 4, 3, 12, 15, "45s", "Moderada", "Combinação de força e resistência muscular em formato variado, promovendo saúde e função.", ["circuito"], false),
+    mesoSimples("recuperacao", "Deload (Recuperação)", 1, 2, 12, 12, "60s", "Reduzida", "Recuperação ativa.", [], false),
   ],
   reabilitacao: [
     mesoSimples("mobilidade", "Mobilidade e Estabilidade", 3, 2, 12, 15, "60-90s", "Muito leve · foco em controle", "Restabelecimento de amplitude, controle motor e estabilização articular. Sem dor.", [], false),
