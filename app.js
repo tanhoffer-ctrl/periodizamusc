@@ -157,9 +157,11 @@
     var peso = useState(d.peso || "");
     var altura = useState(d.altura || "");
     var nivelAtividade = useState(d.nivelAtividade || "sedentario");
+    var pcd = useState(d.pcd || "nao");
     var deficiencia = useState(d.deficiencia || "");
     var deficienciaOutro = useState(d.deficienciaOutro || "");
     var classificacao = useState(d.classificacao || "");
+    var observacoes = useState(d.observacoes || "");
     var msg = useState("");
 
     var idade = calcularIdade(nascimento[0]);
@@ -174,9 +176,11 @@
         peso: peso[0],
         altura: altura[0],
         nivelAtividade: nivelAtividade[0],
+        pcd: pcd[0],
         deficiencia: deficiencia[0],
         deficienciaOutro: deficiencia[0] === "outro" ? deficienciaOutro[0].trim() : "",
         classificacao: classificacao[0],
+        observacoes: observacoes[0].trim(),
       };
     }
 
@@ -235,7 +239,11 @@
           ),
           campoTexto("Peso (kg)", peso, "number", "Ex: 72"),
           campoTexto("Altura (cm ou m)", altura, "number", "Ex: 175 ou 1.75"),
-          campoSelect("Nível de atividade física", nivelAtividade, NIVEIS_ATIVIDADE)
+          campoSelect("Nível de atividade física", nivelAtividade, NIVEIS_ATIVIDADE),
+          campoSelect("Pessoa com deficiência", pcd, [
+            { value: "nao", label: "Não" },
+            { value: "sim", label: "Sim" },
+          ])
         ),
 
         /* IMC automático + observação PcD */
@@ -265,6 +273,21 @@
             ? campoTexto("Especifique", deficienciaOutro, "text", "Descreva a deficiência")
             : e("div", { className: "field" }),
           campoSelect("Classificação esportiva", classificacao, CLASSIFICACOES)
+        )
+      ),
+
+      /* ----- Observações ----- */
+      e("div", { className: "card" },
+        e("h2", null, "Observações"),
+        e("div", { className: "field full" },
+          e("label", null, "Anotações gerais sobre o aluno"),
+          e("textarea", {
+            className: "textarea",
+            value: observacoes[0],
+            onChange: function (ev) { observacoes[1](ev.target.value); },
+            placeholder: "Ex: histórico de lesões, restrições, preferências, medicações, contraindicações, notas de avaliação...",
+            rows: 4,
+          })
         )
       ),
 
@@ -695,7 +718,7 @@
           "(ACSM) e da International Universities Strength and Conditioning Association (IUSCA).")
       ),
       e("p", { className: "footer-note" },
-        "Protótipo v0.5 — lógica baseada em evidências científicas atualizadas.",
+        "Protótipo v0.6 — lógica baseada em evidências científicas atualizadas.",
         e("br"),
         "Prescrição sob responsabilidade técnica de Ricardo Tanhoffer, PhD em Ciências do Exercício."
       )

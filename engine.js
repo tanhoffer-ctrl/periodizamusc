@@ -321,18 +321,30 @@ const MESOS_POR_OBJETIVO = {
         { series: 2, repsMin: 5, repsMax: 5, descanso: "2 min", pct: "~60% 1RM" },
       ], [], false),
   ],
+  // ==========================================================
+  // RESISTÊNCIA MUSCULAR — Linear/circuito, 11 semanas
+  // Cargas baixas + altas repetições + descansos curtos otimizam
+  // a resistência muscular local (continuum de repetições —
+  // Schoenfeld et al.; ACSM 15-25 reps p/ resistência).
+  // ==========================================================
   resistencia: [
-    mesoSimples("adaptacao", "Adaptação", 2, 2, 15, 20, "30-45s", "Baixa-moderada", "Adaptação com altas repetições e descansos curtos.", [], false),
-    mesoSimples("resistencia1", "Resistência Muscular I", 4, 3, 15, 20, "30s", "Moderada", "Aumento de volume com descansos curtos, tolerância à fadiga.", ["circuito"], false),
-    mesoSimples("resistencia2", "Resistência Muscular II", 4, 3, 20, 25, "20-30s", "Moderada · alta densidade", "Reps muito altas e alta densidade. Formato de circuito.", ["circuito"], true),
-    mesoSimples("recuperacao", "Recuperação (Deload)", 1, 2, 15, 15, "45s", "Reduzida", "Recuperação ativa.", [], false),
+    mesoSimples("adaptacao", "Adaptação", 2, 2, 15, 20, "30-45s", "Baixa-moderada", "Adaptação com repetições altas e descansos curtos, preparando a tolerância à fadiga.", [], false),
+    mesoSimples("resistencia1", "Resistência Muscular I", 4, 3, 15, 20, "30s", "Moderada", "Aumento progressivo de volume com descansos curtos para desenvolver tolerância à fadiga.", ["circuito"], false),
+    mesoSimples("resistencia2", "Resistência Muscular II", 4, 3, 20, 25, "20-30s", "Moderada · alta densidade", "Repetições muito altas e alta densidade em formato de circuito. Séries à exaustão.", ["circuito"], true),
+    mesoSimples("recuperacao", "Deload (Recuperação)", 1, 2, 15, 15, "45s", "Reduzida", "Recuperação ativa.", [], false),
   ],
+  // ==========================================================
+  // POTÊNCIA — Blocos (força → conversão → pico), 13 semanas
+  // Base de força precede a conversão em potência. Ênfase em
+  // velocidade concêntrica máxima e pliometria (NSCA S&C).
+  // SEM falha (qualidade do movimento e do sistema nervoso).
+  // ==========================================================
   potencia: [
-    mesoSimples("base", "Base de Força", 3, 4, 5, 6, "2-3 min", "Alta (~75-80% 1RM)", "Base de força para sustentar produção de potência.", [], false),
-    mesoSimples("conversao1", "Conversão em Potência I", 3, 4, 3, 5, "2-3 min", "Explosiva (~50-60% 1RM em velocidade)", "Movimentos explosivos com intenção máxima de velocidade concêntrica.", ["explosivo"], false),
-    mesoSimples("conversao2", "Conversão em Potência II", 3, 5, 2, 4, "3 min", "Explosiva (~30-50% 1RM / pliometria)", "Ênfase em pliometria e movimentos balísticos.", ["pliometria", "explosivo"], false),
-    mesoSimples("pico", "Pico", 2, 3, 2, 3, "3-4 min", "Explosiva máxima", "Especificidade máxima de potência.", ["explosivo"], false),
-    mesoSimples("recuperacao", "Recuperação (Deload)", 1, 3, 5, 5, "2 min", "Reduzida", "Recuperação ativa.", [], false),
+    mesoSimples("base", "Base de Força", 3, 4, 5, 6, "2-3 min", "Alta (~75-80% 1RM)", "Construção de base de força para sustentar a produção de potência.", [], false),
+    mesoSimples("conversao1", "Conversão em Potência I", 3, 4, 3, 5, "2-3 min", "Explosiva (~50-60% 1RM em velocidade)", "Movimentos explosivos com intenção máxima de velocidade na fase concêntrica.", ["explosivo"], false),
+    mesoSimples("conversao2", "Conversão em Potência II", 3, 5, 2, 4, "3 min", "Explosiva (~30-50% 1RM / pliometria)", "Ênfase em pliometria e movimentos balísticos, explorando o ciclo alongamento-encurtamento.", ["pliometria", "explosivo"], false),
+    mesoSimples("pico", "Pico de Potência", 3, 3, 2, 3, "3-4 min", "Explosiva máxima", "Especificidade máxima de potência com baixo volume e recuperação completa.", ["explosivo"], false),
+    mesoSimples("recuperacao", "Deload (Recuperação)", 1, 3, 5, 5, "2 min", "Reduzida", "Recuperação ativa.", [], false),
   ],
   // ==========================================================
   // EMAGRECIMENTO — Circuito/metabólico, 11 semanas
